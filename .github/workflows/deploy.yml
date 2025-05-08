@@ -1,9 +1,44 @@
+# name: Deploy to EC2 on Push
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout Code
+#       uses: actions/checkout@v3
+
+#     - name: Copy files to EC2 via SSH
+#       uses: appleboy/scp-action@v0.1.4
+#       with:
+#         host: ${{ secrets.EC2_HOST }}
+#         username: ${{ secrets.EC2_USER }}
+#         key: ${{ secrets.EC2_SSH_KEY }}
+#         source: "."
+#         target: ${{ secrets.EC2_TARGET_DIR }}
+
+#     - name: Restart Node App
+#       uses: appleboy/ssh-action@v0.1.10
+#       with:
+#         host: ${{ secrets.EC2_HOST }}
+#         username: ${{ secrets.EC2_USER }}
+#         key: ${{ secrets.EC2_SSH_KEY }}
+#         script: |
+#           cd ${{ secrets.EC2_TARGET_DIR }}
+#           chmod +x restart.sh
+#           ./restart.sh
+
 name: Deploy to EC2 on Push
 
 on:
   push:
     branches:
-      - main
+      - main  # Or your desired branch
 
 jobs:
   deploy:
@@ -22,7 +57,19 @@ jobs:
         source: "."
         target: ${{ secrets.EC2_TARGET_DIR }}
 
-    - name: Restart Node App
+    - name: Update EC2 and Install Node.js & NPM
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Update package list
+          sudo apt update
+          # Install Node.js and NPM
+          sudo apt install nodejs npm -y
+
+    - name: Set Execute Permissions and Restart Node App
       uses: appleboy/ssh-action@v0.1.10
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -30,6 +77,8 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd ${{ secrets.EC2_TARGET_DIR }}
+          # Make restart.sh executable
           chmod +x restart.sh
+          # Restart the application
           ./restart.sh
 
