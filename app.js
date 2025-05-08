@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
       <body>
         <!-- Hero Section -->
         <div class="hero">
-          <h1 class="display-3">Welcome to My Beautiful Website!</h1>
+          <h1 class="display-3">Welcome to My  Website!</h1>
           <p class="lead">🚀 Deployed to EC2 via GitHub Actions</p>
         </div>
 
