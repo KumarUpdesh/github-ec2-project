@@ -34,18 +34,20 @@
 #           ./restart.sh
 
 name: Deploy to EC2 on Push
+
 on:
   push:
     branches:
       - main  # or your desired branch
 
 jobs:
-  deploy:
+  # Job 1: Copy files to EC2
+  copy_files_to_ec2:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
-    
+
     - name: Copy files to EC2 via SSH
       uses: appleboy/scp-action@v0.1.4
       with:
@@ -55,6 +57,11 @@ jobs:
         source: "."
         target: ${{ secrets.EC2_TARGET_DIR }}
 
+  # Job 2: Install Node.js, Set Permissions, and Restart Node App
+  install_and_restart:
+    runs-on: ubuntu-latest
+    needs: copy_files_to_ec2  # This job will only run after the copy_files_to_ec2 job completes
+    steps:
     - name: Install Node.js and npm (EC2)
       uses: appleboy/ssh-action@v0.1.10
       with:
@@ -62,6 +69,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Update package list and install Node.js and npm
           sudo apt update
           sudo apt install -y nodejs npm
 
